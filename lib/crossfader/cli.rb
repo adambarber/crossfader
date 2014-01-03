@@ -1,7 +1,14 @@
 require 'thor'
+require 'crossfader/rcfile'
 
 module Crossfader
 	class CLI < Thor
+		
+		def initialize(*)
+      		@rcfile = Crossfader::RCFile.instance
+      		super
+    	end
+
 		desc 'authorize', 'Allow the user to get their api access token'
 		def authorize
 			say "Welcome! Before you can use crossfader, you'll first need to log in"
