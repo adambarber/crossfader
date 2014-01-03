@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Crossfader::VERSION
   spec.authors       = ["Adam Barber"]
   spec.email         = ["adam@adambarber.tv"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
-  spec.homepage      = ""
+  spec.description   = ["Crossfader allows for easy batch conversion and upload of loops for Crossfader.fm"]
+  spec.summary       = ["Quickly convert and upload loops for Crossfader.fm"]
+  spec.homepage      = "http://crossfader.fm"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

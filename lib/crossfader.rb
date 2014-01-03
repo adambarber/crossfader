@@ -1,5 +1,7 @@
 require "crossfader/version"
+require "crossfader/cli"
 
 module Crossfader
-  # Your code goes here...
+	class << self
+	end
 end
