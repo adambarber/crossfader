@@ -18,10 +18,21 @@ module Crossfader
       		default_structure
     	end
 
+    	def []=(email, profile)
+    		write
+    	end
+
     	private
 
     	def default_structure
       		{'configuration' => {}, 'profiles' => {}}
+    	end
+
+    	def write
+      		require 'yaml'
+      		File.open(@path, File::RDWR | File::TRUNC | File::CREAT, 0600) do |rcfile|
+        		rcfile.write @data.to_yaml
+      		end
     	end
 
 	end

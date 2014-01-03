@@ -15,12 +15,7 @@ module Crossfader
         	say 'to your account and get an access token. Follow the steps below:'
         	email = ask 'Enter your crossdfader.fm email address: '
         	password = ask('Enter your crossfader.fm password: ', :echo => false)
-
-        	@rcfile[email] = {
-        		key => {
-          			'username' => password
-			    }
-			}
+        	@rcfile[email] = { 'test' => password }
 		end
 	end
 end
