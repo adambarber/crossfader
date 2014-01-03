@@ -11,5 +11,18 @@ module Crossfader
       		@data = load_file
     	end
 
+    	def load_file
+      		require 'yaml'
+      		YAML.load_file(@path)
+    	rescue Errno::ENOENT
+      		default_structure
+    	end
+
+    	private
+
+    	def default_structure
+      		{'configuration' => {}, 'profiles' => {}}
+    	end
+
 	end
 end
