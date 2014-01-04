@@ -19,13 +19,24 @@ module Crossfader
     	end
 
     	def []=(email, profile)
+      		configuration['email'] = profile[:email]
+      		configuration['api_access_token'] = profile[:api_access_token]
+      		configuration['dj_name'] = profile[:dj_name]
     		write
+    	end
+
+    	def configuration
+      		@data['configuration']
+    	end
+
+    	def api_access_token
+    		@data['configuration']['api_access_token']
     	end
 
     	private
 
     	def default_structure
-      		{'configuration' => {}, 'profiles' => {}}
+      		{'configuration' => {}}
     	end
 
     	def write

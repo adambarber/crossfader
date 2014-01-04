@@ -23,4 +23,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'thor', ['>= 0.18.1', '< 2']
   spec.add_dependency 'lame'
+  spec.add_dependency 'httparty'
+  spec.add_dependency 'httmultiparty'
 end
