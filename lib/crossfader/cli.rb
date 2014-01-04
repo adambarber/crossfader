@@ -31,6 +31,7 @@ module Crossfader
 		def convert
 			say "Let's convert wavs to MP3s!"
 			dir = ask('Select a folder of loops to convert: ')
+			dir = dir.gsub(/\\/, "").strip
 			Dir.foreach(dir) { |file| convert_wav_to_mp3(file, dir) }
 			say "The loops were converted successfully"
 		end
@@ -39,6 +40,7 @@ module Crossfader
 		def upload
 			say "Time to upload some loops!"
 			dir = ask('Select a folder of loops to upload: ')
+			dir = dir.gsub(/\\/, "").strip
 			Dir.foreach(dir) { |file| create_loop_from_file(file, dir) }
 			say "The loops were uploaded successfully"
 		end
@@ -76,9 +78,11 @@ module Crossfader
 			say "Time to batch convert and upload!"
 			pack_name = ask "What do you want to name your new pack?"
 			pack_sub = ask "Enter the subtitle for this pack:"
-			dir = ask('Select a folder of loops to process and upload: ')
-			Dir.foreach(dir) { |file| convert_wav_to_mp3(file, dir) }
-			Dir.foreach(dir) { |file| create_loop_from_file(file, dir) }
+			dir = ask('Select a folder of loops to process and upload:')
+			clean_dir = dir.gsub(/\\/, "").strip
+			say clean_dir
+			Dir.foreach(clean_dir) { |file| convert_wav_to_mp3(file, clean_dir) }
+			Dir.foreach(clean_dir) { |file| create_loop_from_file(file, clean_dir) }
 			response = create_new_pack(pack_name, pack_sub)
 			if response.code == 200
 				say "Success!"
@@ -104,7 +108,7 @@ module Crossfader
 				artwork = open(file_path.gsub('.mp3', '.jpg'), 'r+b')
 				length, bpm, key, artist, title = file.to_s.gsub('.mp3', '').split(' - ')
 				headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
-				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length }, loop: loop_audio, artwork: artwork }
+				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop: loop_audio, artwork: artwork }
 				options = { headers: headers , body: body }
 				response = self.class.post('/feed_items', options)
 				@loop_ids << response['id']
