@@ -4,7 +4,7 @@ require 'crossfader/rcfile'
 module Crossfader
 	class CLI < Thor
 		include HTTMultiParty
-  		base_uri 'api.lvh.me:5000/v3'
+  		base_uri 'http://api.djz.com/v3'
 		def initialize(*)
       		@rcfile = Crossfader::RCFile.instance
       		super
@@ -65,7 +65,18 @@ module Crossfader
 
 		desc 'create_pack', 'Create a new pack'
 		def create_pack
-			
+			say "Create a new pack? That's a great idea!"
+			pack_name = ask "What should we call this pack?"
+			pack_sub = ask "Enter the subtitle for this pack:"
+			headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
+			body = { title: pack_name, content: { subtitle: pack_sub }, type: 'pack' }
+			options = { headers: headers , body: body }
+			response = self.class.post('/feed_items', options)
+			if response.code == 200
+				say "Successfully created a pack named #{pack_name}"
+			else
+				say "Something went wrong."
+			end
 		end
 
 		desc 'help', "Show available commands."
