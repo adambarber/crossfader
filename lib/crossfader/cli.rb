@@ -86,7 +86,7 @@ module Crossfader
 			say "\`crossfader auth\` Authorize this app to work with the Crossfader.fm API.\n"
 			say "\`crossfader convert\` : Convert a folder of .wav files to .mp3.\n"
 			say "\`crossfader upload\` : Upload a folder of .mp3s to the server to create new loops.\n"
-			say "\`crossfader batch\` : Convert a folder of .wav files to .mp3 files and upload them to the server in one step.\n" 
+			say "\`crossfader batch\` : Create a new pack, convert a folder of .wav files to .mp3 files and upload them to the server in one step.\n" 
 			say "\`crossfader create_pack\` : Create a new empty pack.\n\n"
 			say "---\n"
 			say "Have questions, comments, or feed back? Contact Adam at adam@djz.com\n\n"
@@ -94,7 +94,14 @@ module Crossfader
 
 		desc 'batch', "Create a new pack, convert wavs to mp3s, upload mp3s/jpgs as loops, and add loops to pack."
 		def batch
-			
+			loops = []
+			say "Time to batch convert and upload!"
+			pack_name = ask "What do you want to name your new pack?"
+			pack_sub = ask "Enter the subtitle for this pack:"
+			dir = ask('Select a folder of loops to process and upload: ')
+
+			Dir.foreach(dir) do |file|
+			end
 		end
 	end
 end
