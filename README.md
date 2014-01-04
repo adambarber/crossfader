@@ -1,24 +1,30 @@
 # Crossfader
 
-TODO: Write a gem description
+The Crossfader gem is a command line interface for the Crossfader.fm API. If you need to manage a large number of loops, then this is the tool for you.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-    gem 'crossfader'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install crossfader
+1. Install the LAME mp3 encoder.
+2. Install this gem with `gem install crossfader`
+3. Authorize this app
+4. Begin managing your Crossfader library.
 
 ## Usage
 
-TODO: Write usage instructions here
+You can perform the following actions:
+---
+
+`crossfader auth` Authorize this app to work with the Crossfader.fm API.
+`crossfader convert` : Convert a folder of .wav files to .mp3.
+`crossfader upload` : Upload a folder of .mp3s to the server to create new loops.
+`crossfader batch` : Create a new pack, convert a folder of .wav files to .mp3 files and upload them to the server in one step.
+`crossfader create_pack` : Create a new empty pack.
+`crossfader help` : To see this menu.
+
+---
+Have questions, comments, or feed back? Contact Adam at adam@djz.com
+
+To get started, you must first authorize the app and get your api access token.
 
 ## Contributing
 

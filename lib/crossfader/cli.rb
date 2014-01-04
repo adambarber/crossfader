@@ -74,7 +74,6 @@ module Crossfader
 
 		desc 'batch', "Create a new pack, convert wavs to mp3s, upload mp3s/jpgs as loops, and add loops to pack."
 		def batch
-			loops = []
 			say "Time to batch convert and upload!"
 			pack_name = ask "What do you want to name your new pack?"
 			pack_sub = ask "Enter the subtitle for this pack:"
@@ -112,6 +111,7 @@ module Crossfader
 				options = { headers: headers , body: body }
 				response = self.class.post('/feed_items', options)
 				@loop_ids << response['id']
+				say "New loop for #{title} created with an id of #{response['id']}"
 			end
 		end
 
