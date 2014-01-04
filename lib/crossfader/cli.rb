@@ -91,5 +91,10 @@ module Crossfader
 			say "---\n"
 			say "Have questions, comments, or feed back? Contact Adam at adam@djz.com\n\n"
 		end
+
+		desc 'batch', "Create a new pack, convert wavs to mp3s, upload mp3s/jpgs as loops, and add loops to pack."
+		def batch
+			
+		end
 	end
 end
