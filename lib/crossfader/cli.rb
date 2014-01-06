@@ -96,7 +96,7 @@ module Crossfader
 			file_path = File.join(dir, file)
 			if File.file? file_path and File.extname(file_path) == ".wav"
 				mp3_path = "#{file_path}.mp3".gsub!('.wav', '')
-				system "lame -b 192 -h '#{file_path}' '#{mp3_path}'"
+				system "lame -b 160 -h '#{file_path}' '#{mp3_path}'"
 			end
 		end
 
@@ -107,7 +107,7 @@ module Crossfader
 				artwork = open(file_path.gsub('.mp3', '.jpg'), 'r+b')
 				length, bpm, key, artist, title = file.to_s.gsub('.mp3', '').split(' - ')
 				headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
-				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop: loop_audio, artwork: artwork }
+				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop: loop_audio, artwork: artwork, published: 'true' }
 				options = { headers: headers , body: body }
 				response = self.class.post('/feed_items', options)
 				@loop_ids << response['id']
