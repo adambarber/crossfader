@@ -32,7 +32,7 @@ module Crossfader
 			say "Let's convert wavs to MP3s!"
 			dir = ask('Select a folder of loops to convert: ')
 			dir = dir.gsub(/\\/, "").strip
-			Dir.foreach(dir) { |file| convert_wav_to_mp3(file, dir) }
+			Dir.foreach(dir) { |file| convert_wav_to_mp3(file.to_s, dir.to_s) }
 			say "The loops were converted successfully"
 		end
 
@@ -78,10 +78,10 @@ module Crossfader
 			pack_name = ask "What do you want to name your new pack?"
 			pack_sub = ask "Enter the subtitle for this pack:"
 			dir = ask('Select a folder of loops to process and upload:')
-			clean_dir = dir.gsub(/\\/, "").strip
+			clean_dir = dir.gsub(/\\/, '').strip
 			say clean_dir
-			Dir.foreach(clean_dir) { |file| convert_wav_to_mp3(file, clean_dir) }
-			Dir.foreach(clean_dir) { |file| create_loop_from_file(file, clean_dir) }
+			Dir.foreach(clean_dir) { |file| convert_wav_to_mp3(file.to_s, clean_dir.to_s) }
+			Dir.foreach(clean_dir) { |file| create_loop_from_file(file.to_s, clean_dir.to_s) }
 			response = create_new_pack(pack_name, pack_sub)
 			if response.code == 200
 				say "Success!"
@@ -96,18 +96,21 @@ module Crossfader
 			file_path = File.join(dir, file)
 			if File.file? file_path and File.extname(file_path) == ".wav"
 				mp3_path = "#{file_path}.mp3".gsub!('.wav', '')
-				system "lame -b 160 -h '#{file_path}' '#{mp3_path}'"
+				mp3_path_low = "#{file_path}-low.mp3".gsub!('.wav', '')
+				%x(lame -b 192 -h "#{file_path}" "#{mp3_path}")
+				%x(lame -b 96 -m m -h "#{file_path}" "#{mp3_path_low}")
 			end
 		end
 
 		def create_loop_from_file(file, dir)
 			file_path = File.join(dir, file)
-			if File.file? file_path and File.extname(file_path) == ".mp3"
-				loop_audio = open(file_path, 'r+b')
-				artwork = open(file_path.gsub('.mp3', '.jpg'), 'r+b')
+			if File.file? file_path and File.extname(file_path) == ".wav"
+				loop_high = open(file_path.gsub('.wav', '.mp3'), 'r+b')
+				loop_low = open(file_path.gsub('.wav', '-low.mp3'), 'r+b')
+				artwork = open(file_path.gsub('.wav', '.jpg'), 'r+b')
 				length, bpm, key, artist, title = file.to_s.gsub('.mp3', '').split(' - ')
 				headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
-				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop: loop_audio, artwork: artwork, published: 'true' }
+				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop_high: loop_high, loop: loop_low, artwork: artwork, published: 'true' }
 				options = { headers: headers , body: body }
 				response = self.class.post('/feed_items', options)
 				@loop_ids << response['id']
