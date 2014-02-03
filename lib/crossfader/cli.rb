@@ -110,7 +110,7 @@ module Crossfader
 				artwork = open(file_path.gsub('.wav', '.jpg'), 'r+b')
 				length, bpm, key, artist, title = file.to_s.gsub('.mp3', '').split(' - ')
 				headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
-				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop_high: loop_high, loop: loop_low, artwork: artwork, published: 'true' }
+				body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop: loop_high, loop_low: loop_low, artwork: artwork, published: 'true' }
 				options = { headers: headers , body: body }
 				response = self.class.post('/feed_items', options)
 				@loop_ids << response['id']
