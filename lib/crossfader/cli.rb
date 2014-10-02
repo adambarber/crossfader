@@ -1,13 +1,14 @@
 require 'thor'
+require 'rake'
+require 'rake/clean'
 require 'httmultiparty'
 require 'crossfader/rcfile'
 module Crossfader
 	class CLI < Thor
 		include HTTMultiParty
-  		base_uri 'http://api.djz.com/v3'
+  		base_uri 'http://api.lvh.me:5000/v3'
 		def initialize(*)
       		@rcfile = Crossfader::RCFile.instance
-      		@loop_ids = []
       		super
     	end
 
@@ -31,8 +32,8 @@ module Crossfader
 		def convert
 			say "Let's convert wavs to MP3s!"
 			dir = ask('Select a folder of loops to convert: ')
-			dir = dir.gsub(/\\/, "").strip
-			Dir.foreach(dir) { |file| convert_wav_to_mp3(file.to_s, dir.to_s) }
+			files = FileList.new("#{dir}/*.wav")
+			files.each{|file| convert_wav_to_mp3(file) }
 			say "The loops were converted successfully"
 		end
 
@@ -40,8 +41,8 @@ module Crossfader
 		def upload
 			say "Time to upload some loops!"
 			dir = ask('Select a folder of loops to upload: ')
-			dir = dir.gsub(/\\/, "").strip
-			Dir.foreach(dir) { |file| create_loop_from_file(file, dir) }
+			wavs = FileList["#{dir}/*.wav"]
+			wavs.each{|file| create_loop_from_file(file) }
 			say "The loops were uploaded successfully"
 		end
 
@@ -51,7 +52,7 @@ module Crossfader
 			pack_name = ask "What should we call this pack?"
 			pack_sub = ask "Enter the subtitle for this pack:"
 			response = create_new_pack(pack_name, pack_sub)
-			say response
+			say response.code
 			if response.code == 200
 				say "Successfully created a pack named #{pack_name}"
 			else
@@ -68,6 +69,7 @@ module Crossfader
 			say "\`crossfader upload\` : Upload a folder of .mp3s to the server to create new loops.\n"
 			say "\`crossfader batch\` : Create a new pack, convert a folder of .wav files to .mp3 files and upload them to the server in one step.\n" 
 			say "\`crossfader create_pack\` : Create a new empty pack.\n\n"
+			say "\`crossfader clean\` : Remove all MP3s from a folder.\n\n"
 			say "---\n"
 			say "Have questions, comments, or feed back? Contact Adam at adam@djz.com\n\n"
 		end
@@ -78,11 +80,11 @@ module Crossfader
 			pack_name = ask "What do you want to name your new pack?"
 			pack_sub = ask "Enter the subtitle for this pack:"
 			dir = ask('Select a folder of loops to process and upload:')
-			clean_dir = dir.gsub(/\\/, '').strip
-			say clean_dir
-			Dir.foreach(clean_dir) { |file| convert_wav_to_mp3(file.to_s, clean_dir.to_s) }
-			Dir.foreach(clean_dir) { |file| create_loop_from_file(file.to_s, clean_dir.to_s) }
-			response = create_new_pack(pack_name, pack_sub)
+			files = FileList.new("#{dir}/*.wav")
+			files.each{|file| convert_wav_to_mp3(file) }
+			loop_responses = files.map{|file| create_loop_from_file(file) }
+			loop_ids = loop_responses.map{|r| r['id'] }
+			response = create_new_pack(pack_name, pack_sub, loop_ids)
 			if response.code == 200
 				say "Success!"
 			else
@@ -90,37 +92,39 @@ module Crossfader
 			end
 		end
 
+		desc 'clean', "Remove all MP3s from a folder."
+		def clean
+			dir = ask('Select a folder of MP3s to delete: ')
+			mp3s = FileList["#{dir}/*.mp3"]
+			Rake::Cleaner.cleanup_files(mp3s)
+			say "Removed MP3s successfully."
+		end
+
 		private
 
-		def convert_wav_to_mp3(file, dir)
-			file_path = File.join(dir, file)
-			if File.file? file_path and File.extname(file_path) == ".wav"
-				mp3_path = "#{file_path}.mp3".gsub!('.wav', '')
-				mp3_path_low = "#{file_path}-low.mp3".gsub!('.wav', '')
-				%x(lame -b 192 -h "#{file_path}" "#{mp3_path}")
-				%x(lame -b 96 -m m -h "#{file_path}" "#{mp3_path_low}")
-			end
+		def convert_wav_to_mp3(file)
+			mp3 = file.ext(".mp3")
+			mp3_low = "#{file.ext}-low.mp3"
+			%x(lame -b 192 -h "#{file}" "#{mp3}")
+			%x(lame -b 96 -m m -h "#{file}" "#{mp3_low}")
 		end
 
-		def create_loop_from_file(file, dir)
-			file_path = File.join(dir, file)
-			if File.file? file_path and File.extname(file_path) == ".wav"
-				loop_high = open(file_path.gsub('.wav', '.mp3'), 'r+b')
-				loop_low = open(file_path.gsub('.wav', '-low.mp3'), 'r+b')
-				artwork = open(file_path.gsub('.wav', '.jpg'), 'r+b')
-				length, bpm, key, artist, title = file.to_s.gsub('.mp3', '').split(' - ')
-				headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
-				body = { title: title.gsub!('.wav',''), type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop: loop_high, loop_low: loop_low, artwork: artwork, published: 'true' }
-				options = { headers: headers , body: body }
-				response = self.class.post('/feed_items', options)
-				@loop_ids << response['id']
-				say "New loop for #{title} created with an id of #{response['id']}"
-			end
-		end
-
-		def create_new_pack(pack_name, pack_sub)
+		def create_loop_from_file(file)
+			mp3 = File.open(file.ext(".mp3"), 'r+b')
+			mp3_low = File.open("#{file.ext}-low.mp3", 'r+b')
+			artwork = File.open(file.ext('.jpg'), 'r+b')
+			length, bpm, key, artist, title = file.ext.split("-").map(&:strip)
 			headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
-			body = { title: pack_name, content: { subtitle: pack_sub }, type: 'pack', pack_items: @loop_ids }
+			body = { title: title, type: 'loop', content: { artist_name: artist, bpm: bpm, key: key, bar_count: length, loop_type: "Instrumental Song" }, loop: mp3, loop_low: mp3_low, artwork: artwork, published: 'true' }
+			options = { headers: headers , body: body }
+			response = self.class.post('/feed_items', options)
+			say "Uploaded #{title} successfully with an id of #{response['id']}."
+			response
+		end
+
+		def create_new_pack(pack_name, pack_sub, loop_ids)
+			headers = { 'Authorization' => "Token: #{@rcfile.api_access_token}" }
+			body = { title: pack_name, content: { subtitle: pack_sub }, type: 'pack', pack_items: loop_ids }
 			options = { headers: headers , body: body }
 			response = self.class.post('/feed_items', options)
 			return response
