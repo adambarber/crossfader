@@ -6,7 +6,7 @@ require 'crossfader/rcfile'
 module Crossfader
 	class CLI < Thor
 		include HTTMultiParty
-  		base_uri 'http://api.lvh.me:5000/v3'
+  		base_uri 'http://api.djz.com/v3'
 		def initialize(*)
       		@rcfile = Crossfader::RCFile.instance
       		super
